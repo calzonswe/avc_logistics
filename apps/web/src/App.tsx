@@ -23,6 +23,7 @@ import { IncidentsPage } from './pages/manager/IncidentsPage';
 import { NotificationBell } from './components/NotificationBell';
 import { useAppEvents } from './hooks/useAppEvents';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { useTranslation } from 'react-i18next';
 import { useSync } from '@avc/ui/hooks/useSync';
 import { useToast } from '@avc/ui/hooks/useToast';
@@ -82,6 +83,7 @@ const ManagerRoutes = () => {
         <>
           <NotificationBell />
           <LanguageSwitcher />
+          <ThemeSwitcher />
         </>
       }
       sidebar={
@@ -143,6 +145,7 @@ const DashboardRoutes = () => {
         <>
           <NotificationBell />
           <LanguageSwitcher />
+          <ThemeSwitcher />
         </>
       }
       sidebar={
@@ -172,6 +175,7 @@ const DriverRoutes = () => {
         <>
           <NotificationBell />
           <LanguageSwitcher />
+          <ThemeSwitcher />
         </>
       }
       header={
@@ -199,6 +203,7 @@ const WorkerRoutes = () => {
         <>
           <NotificationBell />
           <LanguageSwitcher />
+          <ThemeSwitcher />
         </>
       }
       sidebar={

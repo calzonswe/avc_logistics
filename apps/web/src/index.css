@@ -9,6 +9,50 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
+  .dark {
+    @apply bg-gray-900 text-gray-100;
+  }
+  .dark .bg-white {
+    @apply bg-gray-800;
+  }
+  .dark .border-gray-200 {
+    @apply border-gray-700;
+  }
+  .dark .border-gray-100 {
+    @apply border-gray-700;
+  }
+  .dark .bg-gray-50 {
+    @apply bg-gray-900;
+  }
+  .dark .bg-gray-100 {
+    @apply bg-gray-800;
+  }
+  .dark .shadow-sm {
+    @apply shadow-none;
+  }
+  /* Dark mode text color overrides (raw CSS to avoid @apply circular deps) */
+  .dark .text-gray-900 { color: #f3f4f6; }
+  .dark .text-gray-800 { color: #e5e7eb; }
+  .dark .text-gray-700 { color: #d1d5db; }
+  .dark .text-gray-600 { color: #9ca3af; }
+  .dark .text-gray-500 { color: #6b7280; }
+  .dark .text-gray-400 { color: #4b5563; }
+  .dark .text-blue-700 { color: #60a5fa; }
+  .dark .text-blue-600 { color: #60a5fa; }
+  .dark .text-blue-800 { color: #93c5fd; }
+  .dark .text-red-800 { color: #fca5a5; }
+  .dark .text-orange-800 { color: #fdba74; }
+  .dark .text-yellow-600 { color: #fcd34d; }
+  .dark .text-green-800 { color: #86efac; }
+  .dark .text-purple-800 { color: #c4b5fd; }
+  .dark .bg-blue-700 { background-color: #1e3a8a; }
+  .dark .bg-red-700 { background-color: #7f1d1d; }
+  .dark .hover\:bg-gray-100:hover { background-color: #374151; }
+  .dark .hover\:bg-gray-50:hover { background-color: #374151; }
+  .dark .hover\:bg-blue-50:hover { background-color: #1e3a8a; }
+  .dark .hover\:bg-green-50:hover { background-color: #14532d; }
+  .dark .hover\:bg-purple-50:hover { background-color: #581c87; }
+  .dark .hover\:bg-orange-50:hover { background-color: #451a03; }
 }
 
 @layer components {

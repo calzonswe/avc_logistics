@@ -21,32 +21,32 @@ export function ManagerDashboard() {
   if (isLoading) return <Loader fullScreen />;
 
   const statCards = [
-    { label: t('manager.dashboard.totalContainers'), value: stats?.totalContainers || 0, icon: Box, color: 'bg-blue-100 text-blue-600' },
-    { label: t('manager.dashboard.needsTransport'), value: stats?.containersNeedingTransport || 0, icon: Truck, color: 'bg-orange-100 text-orange-600' },
-    { label: t('manager.dashboard.overdueMaintenance'), value: stats?.overdueMaintenance || 0, icon: Wrench, color: 'bg-red-100 text-red-600' },
-    { label: t('manager.dashboard.openDamage'), value: stats?.openDamageReports || 0, icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-600' },
-    { label: t('manager.dashboard.pendingSwaps'), value: stats?.pendingSwapRequests || 0, icon: Users, color: 'bg-purple-100 text-purple-600' },
-    { label: t('manager.dashboard.pitsToEmpty'), value: stats?.pitsNeedingAttention || 0, icon: Calendar, color: 'bg-green-100 text-green-600' },
+    { label: t('manager.dashboard.totalContainers'), value: stats?.totalContainers || 0, icon: Box, color: 'bg-blue-100 text-blue-600', darkColor: 'bg-blue-900/20 text-blue-400' },
+    { label: t('manager.dashboard.needsTransport'), value: stats?.containersNeedingTransport || 0, icon: Truck, color: 'bg-orange-100 text-orange-600', darkColor: 'bg-orange-900/20 text-orange-400' },
+    { label: t('manager.dashboard.overdueMaintenance'), value: stats?.overdueMaintenance || 0, icon: Wrench, color: 'bg-red-100 text-red-600', darkColor: 'bg-red-900/20 text-red-400' },
+    { label: t('manager.dashboard.openDamage'), value: stats?.openDamageReports || 0, icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-600', darkColor: 'bg-yellow-900/20 text-yellow-400' },
+    { label: t('manager.dashboard.pendingSwaps'), value: stats?.pendingSwapRequests || 0, icon: Users, color: 'bg-purple-100 text-purple-600', darkColor: 'bg-purple-900/20 text-purple-400' },
+    { label: t('manager.dashboard.pitsToEmpty'), value: stats?.pitsNeedingAttention || 0, icon: Calendar, color: 'bg-green-100 text-green-600', darkColor: 'bg-green-900/20 text-green-400' },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('manager.dashboard.title')}</h1>
-          <p className="text-gray-500">{t('manager.dashboard.subtitle')}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('manager.dashboard.title')}</h1>
+          <p className="text-gray-500 dark:text-gray-400">{t('manager.dashboard.subtitle')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="p-6">
+          <Card key={stat.label} className="p-6 dark:bg-gray-800 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1 dark:text-white">{stat.value}</p>
               </div>
-              <div className={`p-3 rounded-xl ${stat.color}`}>
+              <div className={`p-3 rounded-xl ${stat.color} ${stat.darkColor}`}>
                 <stat.icon className="w-6 h-6" />
               </div>
             </div>
@@ -71,21 +71,21 @@ export function ManagerDashboard() {
             <h2 className="text-lg font-semibold text-gray-900">{t('manager.dashboard.quickActions')}</h2>
           </div>
           <div className="p-4 grid grid-cols-2 gap-3">
-            <button className="btn btn-outline text-left p-4 hover:bg-blue-50 border-blue-200">
-              <div className="font-medium text-blue-700">{t('manager.dashboard.newOrder')}</div>
-              <div className="text-sm text-gray-500">{t('manager.dashboard.planTransport')}</div>
+            <button className="btn btn-outline text-left p-4 hover:bg-blue-50 border-blue-200 dark:border-blue-900/30">
+              <div className="font-medium text-blue-700 mb-1 dark:text-blue-400">{t('manager.dashboard.newOrder')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('manager.dashboard.planTransport')}</div>
             </button>
-            <button className="btn btn-outline text-left p-4 hover:bg-green-50 border-green-200">
-              <div className="font-medium text-green-700">{t('manager.dashboard.newContainer')}</div>
-              <div className="text-sm text-gray-500">{t('manager.dashboard.registerContainer')}</div>
+            <button className="btn btn-outline text-left p-4 hover:bg-green-50 border-green-200 dark:border-green-900/30">
+              <div className="font-medium text-green-700 mb-1 dark:text-green-400">{t('manager.dashboard.newContainer')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('manager.dashboard.registerContainer')}</div>
             </button>
-            <button className="btn btn-outline text-left p-4 hover:bg-purple-50 border-purple-200">
-              <div className="font-medium text-purple-700">{t('manager.dashboard.newMaintenance')}</div>
-              <div className="text-sm text-gray-500">{t('manager.dashboard.scheduledMaintenance')}</div>
+            <button className="btn btn-outline text-left p-4 hover:bg-purple-50 border-purple-200 dark:border-purple-900/30">
+              <div className="font-medium text-purple-700 mb-1 dark:text-purple-400">{t('manager.dashboard.newMaintenance')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('manager.dashboard.scheduledMaintenance')}</div>
             </button>
-            <button className="btn btn-outline text-left p-4 hover:bg-orange-50 border-orange-200">
-              <div className="font-medium text-orange-700">{t('manager.dashboard.newReport')}</div>
-              <div className="text-sm text-gray-500">{t('manager.dashboard.analyse')}</div>
+            <button className="btn btn-outline text-left p-4 hover:bg-orange-50 border-orange-200 dark:border-orange-900/30">
+              <div className="font-medium text-orange-700 mb-1 dark:text-orange-400">{t('manager.dashboard.newReport')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('manager.dashboard.analyse')}</div>
             </button>
           </div>
         </Card>

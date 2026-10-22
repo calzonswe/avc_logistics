@@ -37,11 +37,11 @@ export function Layout({
   };
 
   return (
-    <div className={cn('flex h-screen bg-gray-50', className)} {...props}>
+    <div className={cn('flex h-screen bg-gray-50 dark:bg-gray-900', className, 'dark:text-gray-100')} {...props}>
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 lg:hidden dark:bg-black/80"
           onClick={() => setMobileSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -52,6 +52,7 @@ export function Layout({
         <aside
           className={cn(
             'fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0',
+            'dark:bg-gray-800 dark:border-gray-700',
             // On small screens the sidebar is off-screen until the menu button
             // is used (it must never cover the content on a phone).
             sidebarOpen ? 'translate-x-0' : '-translate-x-full',
@@ -61,8 +62,8 @@ export function Layout({
           aria-label="Sidomeny"
         >
           <div className="flex flex-col h-full">
-            <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 lg:hidden">
-              <h2 className="text-lg font-semibold text-gray-900">Meny</h2>
+            <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 lg:hidden dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meny</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -74,17 +75,17 @@ export function Layout({
                 </svg>
               </Button>
             </div>
-            <nav className="flex-1 overflow-y-auto p-4">{sidebar}</nav>
+            <nav className="flex-1 overflow-y-auto p-4 dark:text-gray-300">{sidebar}</nav>
           </div>
         </aside>
       )}
 
       {/* Main content */}
-      <div className={cn('flex-1 flex flex-col lg:ml-0', sidebar && !sidebarOpen && 'lg:ml-0')}>
+      <div className={cn('flex-1 flex flex-col lg:ml-0 dark:bg-gray-900', sidebar && !sidebarOpen && 'lg:ml-0')}>
         {/* Top header — one element for both breakpoints, so the header actions
             (e.g. the notification bell) exist exactly once and keep their
             state. The menu button only shows on small screens. */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
           <div className="flex h-14 lg:h-16 items-center justify-between px-4 sm:px-6 gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {sidebar && (
@@ -116,7 +117,7 @@ export function Layout({
 
         {/* Footer */}
         {footer && (
-          <footer className="border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
+          <footer className="border-t border-gray-200 bg-white px-4 py-4 sm:px-6 dark:border-gray-700 dark:bg-gray-800">
             {footer}
           </footer>
         )}
