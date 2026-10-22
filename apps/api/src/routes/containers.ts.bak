@@ -1,0 +1,262 @@
+// Container Routes - CRUD for containers, fill level updates, ownership transfer
+import { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import { z } from 'zod';
+import { db } from '../db/index.js';
+import {
+  containerSchema,
+  createContainerSchema,
+  updateContainerSchema,
+  updateContainerFillLevelSchema,
+  transferContainerOwnershipSchema,
+} from '@avc/shared-types/api.js';
+import { ContainerOverview, paginatedResponseSchema } from '@avc/shared-types/api.js';
+import { requireRole, requireSiteAccess, AppError, NotFoundError } from '../middleware/errorHandler.js';
+
+export async function containerRoutes(app: FastifyInstance, _options: FastifyPluginOptions) {
+  // List containers with overview data
+  app.get<{ Querystring: z.infer<typeof import('@avc/shared-types/api').containerQuerySchema> }>(
+    '/',
+    {
+        response: { 200: paginatedResponseSchema(z.any()) }, // ContainerOverview
+      },
+    },
+    async (request) => {
+      const { page = 1, limit = 20, site_id, company_id, type, fill_level, status, needs_maintenance, search } = request.query;
+
+      let query = db
+        .selectFrom('containers')
+        .innerJoin('companies', 'containers.owning_company_id', 'companies.id')
+        .leftJoin('sites', 'containers.current_site_id', 'sites.id')
+        .leftJoin('parking_spots', 'containers.current_spot_id', 'parking_spots.id')
+        .leftJoin('zones', 'parking_spots.zone_id', 'zones.id')
+        .select([
+          'containers.id',
+          'containers.container_number',
+          'containers.qr_code_value',
+          'containers.type',
+          'containers.fill_level',
+          'containers.status',
+          'containers.owning_company_id',
+          'companies.name as owning_company_name',
+          'containers.current_site_id',
+          'sites.name as current_site_name',
+          'containers.current_spot_id',
+          'parking_spots.spot_code',
+          'zones.name as zone_name',
+          'containers.last_maintenance_at',
+          'containers.next_maintenance_due',
+          'containers.maintenance_interval_months',
+          'containers.updated_at',
+        ]);
+
+      if (site_id) query = query.where('containers.current_site_id', '=', site_id);
+      if (company_id) query = query.where('containers.owning_company_id', '=', company_id);
+      if (type) query = query.where('containers.type', '=', type);
+      if (fill_level) query = query.where('containers.fill_level', '=', fill_level);
+      if (status) query = query.where('containers.status', '=', status);
+      if (needs_maintenance) {
+        query = query.where('containers.next_maintenance_due', '<=', new Date());
+      }
+      if (search) {
+        query = query.where((eb) =>
+          eb.or([
+            eb('containers.container_number', 'ilike', `%${search}%`),
+            eb('containers.qr_code_value', 'ilike', `%${search}%`),
+          ])
+        );
+      }
+
+      // Site access control for workers/drivers
+      if (request.user && ['driver', 'worker'].includes(request.user.role)) {
+        if (request.user.site_id) {
+          query = query.where('containers.current_site_id', '=', request.user.site_id);
+        }
+      }
+
+      const total = await query.select((eb) => eb.fn.count('containers.id').as('count')).executeTakeFirst();
+      const containers = await query
+        .orderBy('containers.container_number')
+        .limit(limit)
+        .offset((page - 1) * limit)
+        .execute();
+
+      // Add maintenance status
+      const now = new Date();
+      const data = containers.map((c) => ({
+        ...c,
+        maintenance_status: c.next_maintenance_due && c.next_maintenance_due < now ? 'overdue'
+          : c.next_maintenance_due && c.next_maintenance_due < new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) ? 'due_soon'
+          : 'ok',
+      }));
+
+      return {
+        data,
+        meta: { page, limit, total: Number(total?.count || 0), totalPages: Math.ceil(Number(total?.count || 0) / limit) },
+      };
+    }
+  );
+
+  // Get single container
+  app.get<{ Params: { id: string } }>(
+    '/:id',
+  );
+
+  // Get container by QR code (for mobile scanning)
+  app.get<{ Params: { qrCode: string } }>(
+    '/qr/:qrCode',
+  );
+
+  // Create container
+  app.post<{ Body: z.infer<typeof createContainerSchema> }>(
+    '/',
+    {
+      preHandler: requireRole('admin', 'manager'),
+    async (request, reply) => {
+      // Verify spot exists and is available
+      if (request.body.current_spot_id) {
+        const spot = await db
+          .selectFrom('parking_spots')
+          .selectAll()
+          .where('id', '=', request.body.current_spot_id)
+          .executeTakeFirst();
+        if (!spot) throw new AppError('Parkeringsplats hittades inte', 'NOT_FOUND', 404);
+        if (!spot.is_active) throw new AppError('Parkeringsplats är inaktiv', 'CONFLICT', 409);
+
+        // Check if spot already occupied
+        const occupied = await db
+          .selectFrom('containers')
+          .select('id')
+          .where('current_spot_id', '=', request.body.current_spot_id)
+          .executeTakeFirst();
+        if (occupied) throw new AppError('Parkeringsplats är redan upptagen', 'CONFLICT', 409);
+      }
+
+      // Verify site exists
+      if (request.body.current_site_id) {
+        const site = await db.selectFrom('sites').select('id').where('id', '=', request.body.current_site_id).executeTakeFirst();
+        if (!site) throw new AppError('Plats hittades inte', 'NOT_FOUND', 404);
+      }
+
+      // Verify company exists
+      const company = await db.selectFrom('companies').select('id').where('id', '=', request.body.owning_company_id).executeTakeFirst();
+      if (!company) throw new AppError('Företag hittades inte', 'NOT_FOUND', 404);
+
+      const container = await db
+        .insertInto('containers')
+        .values(request.body as any)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      return reply.code(201).send(container);
+    }
+  );
+
+  // Update container
+  app.patch<{ Params: { id: string }; Body: z.infer<typeof updateContainerSchema> }>(
+    '/:id',
+    {
+      preHandler: requireRole('admin', 'manager'),
+    async (request) => {
+      const container = await db
+        .updateTable('containers')
+        .set(request.body as any)
+        .where('id', '=', request.params.id)
+        .returningAll()
+        .executeTakeFirst();
+      if (!container) throw new NotFoundError('Container', request.params.id);
+      return container;
+    }
+  );
+
+  // Update fill level (worker/driver)
+  app.patch<{ Params: { id: string }; Body: z.infer<typeof updateContainerFillLevelSchema> }>(
+    '/:id/fill-level',
+    {
+      preHandler: requireRole('admin', 'manager', 'worker', 'driver'),
+    async (request) => {
+      const { fill_level, spot_id } = request.body;
+
+      const updateData: Record<string, unknown> = { fill_level };
+      if (spot_id) updateData.current_spot_id = spot_id;
+      updateData.updated_at = new Date();
+
+      const container = await db
+        .updateTable('containers')
+        .set(updateData as any)
+        .where('id', '=', request.params.id)
+        .returningAll()
+        .executeTakeFirst();
+      if (!container) throw new NotFoundError('Container', request.params.id);
+      return container;
+    }
+  );
+
+  // Transfer ownership
+  app.post<{ Params: { id: string }; Body: z.infer<typeof transferContainerOwnershipSchema> }>(
+    '/:id/transfer',
+    {
+      preHandler: requireRole('admin', 'manager'),
+    async (request) => {
+      const container = await db.selectFrom('containers').selectAll().where('id', '=', request.params.id).executeTakeFirst();
+      if (!container) throw new NotFoundError('Container', request.params.id);
+
+      const toCompany = await db.selectFrom('companies').select('id').where('id', '=', request.body.to_company_id).executeTakeFirst();
+      if (!toCompany) throw new AppError('Mottagande företag hittades inte', 'NOT_FOUND', 404);
+
+      await db.transaction().execute(async (trx) => {
+        // Update container ownership
+        await trx
+          .updateTable('containers')
+          .set({ owning_company_id: request.body.to_company_id } as any)
+          .where('id', '=', request.params.id)
+          .execute();
+
+        // Record in ownership history
+        await trx.insertInto('container_ownership_history').values({
+          container_id: request.params.id,
+          from_company_id: container.owning_company_id,
+          to_company_id: request.body.to_company_id,
+          changed_by: request.currentUserId!,
+          reason: request.body.reason,
+        } as any).execute();
+      });
+
+      return { success: true };
+    }
+  );
+
+  // Delete container (soft - set status to retired)
+  app.delete<{ Params: { id: string } }>(
+    '/:id',
+    { preHandler: requireRole('admin', 'manager') },
+    async (request) => {
+      await db.updateTable('containers').set({ status: 'retired' }).where('id', '=', request.params.id).execute();
+      return { success: true };
+    }
+  );
+
+  // Get containers needing transport (fill level >= 75%)
+  app.get('/needing-transport', async (request) => {
+    const containers = await db
+      .selectFrom('containers')
+      .innerJoin('companies', 'containers.owning_company_id', 'companies.id')
+      .leftJoin('sites', 'containers.current_site_id', 'sites.id')
+      .leftJoin('parking_spots', 'containers.current_spot_id', 'parking_spots.id')
+      .select([
+        'containers.id',
+        'containers.container_number',
+        'containers.type',
+        'containers.fill_level',
+        'containers.current_site_id',
+        'sites.name as current_site_name',
+        'containers.current_spot_id',
+        'parking_spots.spot_code',
+        'companies.name as owning_company_name',
+      ])
+      .where('containers.fill_level', 'in', ['75', '100'])
+      .where('containers.status', '=', 'active')
+      .execute();
+
+    return containers;
+  });
+}

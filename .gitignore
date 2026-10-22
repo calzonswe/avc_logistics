@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.production
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.sqlite
+*.db
+
+# Uploads
+apps/api/uploads/
+apps/web/public/uploads/
+
+# Temporary
+tmp/
+temp/
+
+# Misc
+*.tgz
+.cache/

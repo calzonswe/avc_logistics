@@ -1,0 +1,30 @@
+{
+  "name": "@avc/shared-types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./api": "./dist/api.js",
+    "./api.js": "./dist/api.js",
+    "./db": "./dist/db.js",
+    "./db.js": "./dist/db.js",
+    "./domain": "./dist/domain.js",
+    "./domain.js": "./dist/domain.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "zod": "^3.22.0"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  }
+}
