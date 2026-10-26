@@ -76,11 +76,15 @@ ENV UPLOAD_DIR=./uploads
 
 EXPOSE 3000
 
+# Copy the entrypoint script that runs migrations, seeds, then starts the API
+COPY apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
+RUN chmod +x ./apps/api/docker-entrypoint.sh
+
 # The compose file uses this health check for the startup order.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "apps/api/dist/index.js"]
+CMD ["/app/apps/api/docker-entrypoint.sh"]
 
 # Development stage
 FROM base AS development
