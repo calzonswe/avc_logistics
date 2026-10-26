@@ -173,7 +173,7 @@ export function WorkerPage() {
         <PitsTab
           pits={pitsData || []}
           onEmpty={(id) => emptyPitMutation.mutate(id)}
-          isEmptying={emptyPitMutation.isPending && emptyPitMutation.variables === undefined}
+          isEmptying={emptyPitMutation.isPending}
           onFillLevel={(id, fill_level) => pitFillMutation.mutate({ id, fill_level })}
           updatingId={pitFillMutation.isPending ? pitFillMutation.variables?.id : undefined}
         />
