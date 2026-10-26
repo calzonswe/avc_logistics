@@ -54,6 +54,10 @@ services:
       HOST: 0.0.0.0
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-avc_management}
       REDIS_URL: redis://redis:6379
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-avc_management}
+      POSTGRES_HOST: postgres
       # A strong secret — see .env.production.example
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (min 32 chars)}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
