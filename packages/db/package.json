@@ -12,6 +12,7 @@
     "studio": "tsx src/studio.ts"
   },
   "dependencies": {
+    "@avc/shared-types": "workspace:*",
     "kysely": "^0.27.0",
     "pg": "^8.11.0"
   },
